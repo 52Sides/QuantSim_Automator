@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quant-sim-automator"
+version = "0.1.0"
+dependencies = [
+    "pandas",
+    "numpy",
+    "typer[all]",
+    "pytest",
+    "yfinance"
+]
