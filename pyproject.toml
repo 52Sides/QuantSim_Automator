@@ -5,10 +5,18 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "quant-sim-automator"
 version = "0.1.0"
-dependencies = [
-    "pandas",
-    "numpy",
-    "typer[all]",
-    "pytest",
-    "yfinance"
+description = "QuantSim Automator: modular portfolio simulation system"
+authors = [
+  { name = "PulyaevDmitry", email = "everybody.knows.1152@gmail.com" }
 ]
+dependencies = [
+  "pandas",
+  "numpy",
+  "typer[all]",
+  "pytest",
+  "yfinance"
+]
+
+[tool.setuptools.packages.find]
+include = ["core", "cli"]
+exclude = ["tests"]
