@@ -7,7 +7,7 @@ name = "quant-sim-automator"
 version = "0.2.0"
 description = "QuantSim Automator: modular portfolio simulation system"
 authors = [
-  { name = "Your Name", email = "you@example.com" }
+  { name = "52Sides", email = "everybody.knows.1152@gmail.com" }
 ]
 dependencies = [
   "pandas",
@@ -17,7 +17,6 @@ dependencies = [
   "yfinance"
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["core", "cli"]
-exclude = ["tests"]
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["core", "cli"]
