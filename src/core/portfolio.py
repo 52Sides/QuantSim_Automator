@@ -25,6 +25,10 @@ class PortfolioSimulator:
     def __init__(self, price_series: pd.Series, risk_free_rate: float = 0.0):
         if not isinstance(price_series, pd.Series):
             raise TypeError("price_series must be a pandas Series of prices indexed by date")
+
+        if len(price_series) == 0:
+            raise ValueError("price_series is empty — cannot simulate")
+
         self.prices = price_series.sort_index()
         self.risk_free_rate = risk_free_rate
 

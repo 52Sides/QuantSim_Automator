@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import pytest
-from core.portfolio import PortfolioSimulator
+from src.core.portfolio import PortfolioSimulator
 
 # ---- Вспомогательная функция ----
 def make_price_series(days: int = 252, start_price: float = 100, daily_return: float = 0.001) -> pd.Series:

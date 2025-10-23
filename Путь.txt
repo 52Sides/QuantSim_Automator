@@ -95,3 +95,16 @@ actions/checkout		клонирует репозиторий
 actions/setup-python		ставит Python
 pip install -r requirements.txt	устанавливает зависимости
 pytest -v			запускает тесты
+
+
+pip install pytest-cov  # проверяет покрытие проекта тестами
+python -m pytest --cov=core --cov-report=term-missing  # запрос на покрытие тестами
+
+git remote add origin https://github.com/<твой_юзернейм>/<имя_репо>.git  # добавляет директорию для сохранения на github
+git branch -M main  # переименовывает ветку в main
+git push -u origin main  # сохраняет версию в облаке
+
+если CI ловит importerror
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Добавляем корень проекта в sys.path
+
+
