@@ -14,7 +14,8 @@ dependencies = [
   "numpy",
   "typer[all]",
   "pytest",
-  "yfinance"
+  "yfinance",
+  "pytest-cov"
 ]
 
 [tool.setuptools]
