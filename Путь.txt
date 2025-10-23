@@ -1,0 +1,30 @@
+План итераций (пошагово, без временных обещаний — вы решаете темп)
+
+Итерация 0 — подготовка репозитория и окружения
+что будет: git репозиторий, pyproject.toml/requirements.txt, структура папок (core/, cli/, services/, tests/).
+почему: чистая структура облегчает масштабирование (см. ТЗ).
+
+Итерация 1 — MVP CLI (локальная симуляция)
+что будет: typer CLI (cli/run.py) с командой simulate:
+использует core.portfolio.PortfolioSimulator для расчётов;
+простой fetcher (core.fetchers.yfinance_fetcher) — возвращает котировки;
+сохраняет result.json и печатает краткую метрику.
+документация / обучение: пошаговый разбор кода, объяснение архитектурных решений, как протестировать локально.
+
+Итерация 2 — тесты и CI
+что будет: pytest тесты для метрик (CAGR, Sharpe, max drawdown), GitHub Actions для запуска тестов.
+
+Итерация 3 — Web API (FastAPI)
+что будет: backend/app/main.py с /simulate endpoint, который стартует задачу симуляции (синхронно в MVP).
+обучение: разница между CLI и API, Pydantic-модели, dependency injection.
+
+Итерация 4 — фоновые задачи (Celery) + Kafka (events)
+что будет: вынесение симуляций в Celery worker, публикация событий в Kafka.
+обучение: почему нужен Celery, как связать с FastAPI, схема событий (см. ТЗ).
+
+Итерация 5 — frontend (React) + realtime
+что будет: минимальная страница с формой симуляции и графиком (Plotly).
+обучение: как подписаться на события через WebSocket/Kafka gateway.
+
+Итерация 6 — экспорт отчётов, докеризация, mkdocs
+что будет: html/xlsx экспорт, Dockerfile, docker-compose, mkdocs с документацией.
