@@ -35,3 +35,8 @@ jobs:
         run: |
           pytest --cov=core --cov-report=term-missing
 
+      - name: Build Docker image
+        run: |
+          docker build -t quantsim-test .
+
+

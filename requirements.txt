@@ -6,4 +6,4 @@ yfinance
 pytest-cov
 fastapi
 uvicorn
-
+httpx
