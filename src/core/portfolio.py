@@ -76,3 +76,28 @@ class PortfolioSimulator:
             max_drawdown=self.max_drawdown(cum),
             meta=meta,
         )
+
+    def calculate_metrics(self) -> dict:
+        returns = self.prices.pct_change().dropna()
+
+        # CAGR (годовой рост)
+        total_return = self.prices.iloc[-1] / self.prices.iloc[0] - 1
+        years = (self.prices.index[-1] - self.prices.index[0]).days / 365.25
+        cagr = (1 + total_return) ** (1 / years) - 1 if years > 0 else np.nan
+
+        # Sharpe Ratio
+        mean_return = returns.mean()
+        std_return = returns.std()
+        sharpe = ((mean_return - self.risk_free_rate / 252) / std_return) * np.sqrt(252) if std_return != 0 else np.nan
+
+        # Max Drawdown
+        cumulative = (1 + returns).cumprod()
+        rolling_max = cumulative.cummax()
+        drawdown = (cumulative - rolling_max) / rolling_max
+        max_drawdown = drawdown.min()
+
+        return {
+            "CAGR": float(cagr),
+            "Sharpe Ratio": float(sharpe),
+            "Max Drawdown": float(max_drawdown)
+        }

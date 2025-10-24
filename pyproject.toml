@@ -15,7 +15,9 @@ dependencies = [
   "typer[all]",
   "pytest",
   "yfinance",
-  "pytest-cov"
+  "pytest-cov",
+  "fastapi",
+  "uvicorn"
 ]
 
 [tool.setuptools]

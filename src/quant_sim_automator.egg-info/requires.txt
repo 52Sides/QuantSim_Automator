@@ -3,3 +3,6 @@ numpy
 typer[all]
 pytest
 yfinance
+pytest-cov
+fastapi
+uvicorn

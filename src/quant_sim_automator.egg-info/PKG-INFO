@@ -8,3 +8,6 @@ Requires-Dist: numpy
 Requires-Dist: typer[all]
 Requires-Dist: pytest
 Requires-Dist: yfinance
+Requires-Dist: pytest-cov
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
