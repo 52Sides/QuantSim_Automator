@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.src.api.routers import simulate
+from api.routers import simulate
 
 app = FastAPI(
     title="QuantSim Automator API",
