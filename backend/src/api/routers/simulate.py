@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 
-from backend.src.schemas.simulation import SimulationRequest, SimulationResponse
-from backend.src.core.portfolio import PortfolioSimulator
-from backend.src.core.fetchers.yfinance_fetcher import fetch_price_series
+from schemas.simulation import SimulationRequest, SimulationResponse
+from core.portfolio import PortfolioSimulator
+from core.fetchers.yfinance_fetcher import fetch_price_series
 
 
 router = APIRouter(prefix="/simulate", tags=["Simulation"])
