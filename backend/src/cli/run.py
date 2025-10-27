@@ -1,8 +1,8 @@
 import typer
 import json
 from datetime import datetime
-from backend.src.core import fetch_price_series
-from backend.src.core import PortfolioSimulator
+from core.fetchers.yfinance_fetcher import fetch_price_series
+from core.portfolio import PortfolioSimulator
 
 app = typer.Typer(help="QuantSim Automator CLI")
 
