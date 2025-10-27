@@ -22,5 +22,5 @@ dependencies = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "backend/src"}
+package-dir = {"" = "src"}
 packages = ["api", "cli", "core", "schemas"]
