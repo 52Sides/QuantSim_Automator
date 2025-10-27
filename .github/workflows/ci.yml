@@ -25,12 +25,6 @@ jobs:
           pip install -r backend/requirements.txt
           pip install -e ./backend
 
-      - name: Run tests
-        env:
-          PYTHONPATH: backend/src
-        run: |
-          pytest -v
-
       - name: Run tests with coverage
         run: |
           pytest --cov=core --cov-report=term-missing
