@@ -31,6 +31,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t quantsim-test backend/Dockerfile .
+          docker build -t quantsim-test -f backend/Dockerfile .
+
 
 
