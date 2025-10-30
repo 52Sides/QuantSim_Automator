@@ -1,4 +1,3 @@
-import json
 from typer.testing import CliRunner
 from cli.run import app
 
@@ -20,7 +19,8 @@ def test_cli_simulate_success(monkeypatch, tmp_path):
         return pd.Series([100 + i for i in range(len(idx))], index=idx)
 
     class FakeSimulator:
-        def __init__(self, series): ...
+        def __init__(self, series):
+            pass
 
         def run(self, meta=None):
             import pandas as pd

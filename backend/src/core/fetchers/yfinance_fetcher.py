@@ -1,6 +1,6 @@
-from typing import Optional
 import pandas as pd
 import yfinance as yf
+
 
 def fetch_price_series(ticker: str, start: str, end: str) -> pd.Series:
     """

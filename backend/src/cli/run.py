@@ -5,10 +5,11 @@ from core import parse_command_safe, build_portfolio_series, PortfolioSimulator
 
 app = typer.Typer(help="QuantSim Automator CLI")
 
+
 @app.command()
-def simulate(
-    command: str = typer.Argument(..., help="Команда симуляции, например: 'TSLA-L-50% AAPL-S-50% 2020-01-01 2021-01-01'"),
-):
+def simulate(command: str = typer.Argument(
+        ..., help="Команда симуляции, например: 'TSLA-L-50% AAPL-S-50% 2020-01-01 2021-01-01'"
+)):
     """Запуск симуляции портфеля по командной строке."""
     typer.echo(f"🔹 Симуляция портфеля: {command}")
 
@@ -28,7 +29,7 @@ def simulate(
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
 
-        typer.echo(f"\n✅ Результаты симуляции:")
+        typer.echo("\n✅ Результаты симуляции:")
         typer.echo(f"  CAGR: {result.cagr:.3%}")
         typer.echo(f"  Sharpe Ratio: {result.sharpe:.3f}")
         typer.echo(f"  Max Drawdown: {result.max_drawdown:.2%}")

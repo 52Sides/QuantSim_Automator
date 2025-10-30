@@ -3,6 +3,7 @@ import pandas as pd
 from typing import Dict, Any
 from core.simulation_result import SimulationResult
 
+
 class PortfolioSimulator:
     """Вычисляет метрики эффективности портфеля."""
 
@@ -24,7 +25,7 @@ class PortfolioSimulator:
     def cagr(self) -> float:
         start, end = self.prices.iloc[0], self.prices.iloc[-1]
         days = (self.prices.index[-1] - self.prices.index[0]).days
-        years = max(days / 365.25, 1/365.25)
+        years = max(days / 365.25, 1 / 365.25)
         return (end / start) ** (1 / years) - 1
 
     def sharpe_ratio(self, returns: pd.Series) -> float:

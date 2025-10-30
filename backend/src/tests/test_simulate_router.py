@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from api.main import app
 
@@ -20,17 +19,17 @@ def test_simulate_router_success(monkeypatch):
         return pd.Series([100 + i for i in range(len(idx))], index=idx)
 
     class FakeSimulator:
-        def __init__(self, series): ...
+        def __init__(self, series):
+            pass
 
         def run(self):
             import pandas as pd
             idx = pd.date_range("2020-01-01", "2020-06-01", freq="ME")
             returns = pd.Series([0.01] * (len(idx) - 1), index=idx[1:])
             cumulative = pd.Series([1.0 + i * 0.01 for i in range(len(idx))], index=idx)
+
             return core.SimulationResult(
-                returns=returns,
-                cumulative=cumulative,
-                cagr=0.1, sharpe=1.2, max_drawdown=0.05, meta={}
+                returns=returns, cumulative=cumulative, cagr=0.1, sharpe=1.2, max_drawdown=0.05, meta={}
             )
 
     monkeypatch.setattr("api.routers.simulate.parse_command_safe", fake_parse)
@@ -56,6 +55,6 @@ def test_simulate_router_failure(monkeypatch):
     monkeypatch.setattr(core, "parse_command_safe", bad_parse)
 
     response = client.post("/simulate/", json={"command": "BAD INPUT"})
+
     assert response.status_code == 400
     assert "Invalid format" in response.text or "Invalid input" in response.text
-

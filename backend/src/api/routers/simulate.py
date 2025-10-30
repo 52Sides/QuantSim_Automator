@@ -4,6 +4,7 @@ from core import parse_command_safe, build_portfolio_series, PortfolioSimulator
 
 router = APIRouter(prefix="/simulate", tags=["Simulation"])
 
+
 @router.post("/", response_model=SimulationResponse)
 def simulate_portfolio(request: SimulationRequest):
     try:

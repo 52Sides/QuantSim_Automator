@@ -6,6 +6,7 @@ MAX_TICKERS = 10
 MAX_CMD_LENGTH = 500
 TICKER_RE = re.compile(r'^[A-Z0-9\.\-]{1,6}$')
 
+
 class CommandValidationError(ValueError):
     """Ошибка валидации команды."""
     pass

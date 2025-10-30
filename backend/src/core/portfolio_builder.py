@@ -1,6 +1,8 @@
 import pandas as pd
 from typing import Dict
+
 from core.fetchers.yfinance_fetcher import fetch_price_series
+
 
 def build_portfolio_series(
     weights: Dict[str, float],
@@ -24,4 +26,5 @@ def build_portfolio_series(
     first = df.iloc[0]
     value_df = df.div(first) * pd.Series(weights) * budget
     portfolio_value = value_df.sum(axis=1)
+
     return portfolio_value  # в USD, не нормализовано
