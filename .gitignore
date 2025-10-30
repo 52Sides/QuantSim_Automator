@@ -2,6 +2,7 @@ backend/src/quant_sim_automator.egg-info/
 venv
 # IDE
 *.idea/
+.idea/
 .vscode/
 
 # Python build artifacts
