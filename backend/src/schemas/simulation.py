@@ -1,23 +1,19 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import List, Dict
+from typing import List
 
-class PricePoint(BaseModel):
+
+class PortfolioPoint(BaseModel):
     date: str
-    close: float
+    portfolio_value: float
 
 
 class SimulationRequest(BaseModel):
-    ticker: str
-    start: date
-    end: date
+    command: str  # пример: "TSLA-S-20% AAPL-L-80% 2020-05-01 2021-05-01"
 
 
 class SimulationResponse(BaseModel):
-    ticker: str
-    start: date
-    end: date
     cagr: float
     sharpe: float
     max_drawdown: float
-    prices: List[PricePoint]
+    portfolio: List[PortfolioPoint]

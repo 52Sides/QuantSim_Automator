@@ -1,35 +1,57 @@
 import typer
 import json
-from datetime import datetime
-from core.fetchers.yfinance_fetcher import fetch_price_series
-from core.portfolio import PortfolioSimulator
+from datetime import datetime, timezone
+from core import parse_command_safe, build_portfolio_series, PortfolioSimulator
 
 app = typer.Typer(help="QuantSim Automator CLI")
 
 @app.command()
 def simulate(
-    ticker: str = typer.Argument(..., help="Ticker symbol, e.g. AAPL"),
-    start: str = typer.Option(..., "--start", help="Start date YYYY-MM-DD"),
-    end: str = typer.Option(..., "--end", help="End date YYYY-MM-DD"),
+    command: str = typer.Argument(..., help="Команда симуляции, например: 'TSLA-L-50% AAPL-S-50% 2020-01-01 2021-01-01'"),
 ):
-    """Запуск симуляции портфеля по одному тикеру."""
-    typer.echo(f"Fetching prices for {ticker} from {start} to {end}...")
-    prices = fetch_price_series(ticker, start, end)
-    sim = PortfolioSimulator(prices)
-    result = sim.run(meta={"ticker": ticker, "start": start, "end": end, "timestamp": datetime.utcnow().isoformat()})
-    typer.echo(f"CAGR: {result.cagr:.2%}")
-    typer.echo(f"Sharpe: {result.sharpe:.4f}")
-    typer.echo(f"Max drawdown: {result.max_drawdown:.2%}")
+    """Запуск симуляции портфеля по командной строке."""
+    typer.echo(f"🔹 Симуляция портфеля: {command}")
 
-    out = {
-        "meta": result.meta,
-        "cagr": result.cagr,
-        "sharpe": result.sharpe,
-        "max_drawdown": result.max_drawdown,
-    }
-    with open("result.json", "w", encoding="utf-8") as f:
-        json.dump(out, f, indent=2)
-    typer.echo("Result saved to result.json")
+    try:
+        # --- парсим команду ---
+        weights, sides, start, end = parse_command_safe(command)
+        typer.echo(f"📈 Период: {start} → {end}")
+        typer.echo(f"💼 Активы: {', '.join(weights.keys())}")
+
+        # --- строим серию портфеля ---
+        portfolio_series = build_portfolio_series(weights, sides, start, end, budget=10_000)
+
+        # --- считаем метрики ---
+        simulator = PortfolioSimulator(portfolio_series)
+        result = simulator.run(meta={
+            "command": command,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+
+        typer.echo(f"\n✅ Результаты симуляции:")
+        typer.echo(f"  CAGR: {result.cagr:.3%}")
+        typer.echo(f"  Sharpe Ratio: {result.sharpe:.3f}")
+        typer.echo(f"  Max Drawdown: {result.max_drawdown:.2%}")
+
+        # --- сохраняем результат ---
+        out = {
+            "meta": result.meta,
+            "cagr": result.cagr,
+            "sharpe": result.sharpe,
+            "max_drawdown": result.max_drawdown,
+            "portfolio": [
+                {"date": idx.strftime("%Y-%m-%d"), "portfolio_value": float(val)}
+                for idx, val in result.cumulative.items()
+            ],
+        }
+        with open("result.json", "w", encoding="utf-8") as f:
+            json.dump(out, f, indent=2, ensure_ascii=False)
+        typer.echo("\n💾 Результаты сохранены в result.json")
+
+    except Exception as e:
+        typer.echo(f"❌ Ошибка: {e}")
+        raise typer.Exit(code=1)
+
 
 if __name__ == "__main__":
     app()

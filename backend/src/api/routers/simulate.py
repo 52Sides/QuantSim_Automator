@@ -1,49 +1,31 @@
 from fastapi import APIRouter, HTTPException
-import pandas as pd
-
-from schemas.simulation import SimulationRequest, SimulationResponse
-from core.portfolio import PortfolioSimulator
-from core.fetchers.yfinance_fetcher import fetch_price_series
-
+from schemas.simulation import SimulationRequest, SimulationResponse, PortfolioPoint
+from core import parse_command_safe, build_portfolio_series, PortfolioSimulator
 
 router = APIRouter(prefix="/simulate", tags=["Simulation"])
 
 @router.post("/", response_model=SimulationResponse)
 def simulate_portfolio(request: SimulationRequest):
-    """
-    Один API вызов: получает котировки Yahoo, считает метрики, возвращает результат и данные для графика.
-    """
     try:
-        # Загружаем котировки
-        prices = fetch_price_series(
-            request.ticker,
-            request.start.strftime("%Y-%m-%d"),
-            request.end.strftime("%Y-%m-%d")
-        )
+        # --- парсим команду ---
+        weights, sides, start, end = parse_command_safe(request.command)
+        portfolio_series = build_portfolio_series(weights, sides, start, end, budget=10_000)
 
-        if prices.empty:
-            raise HTTPException(status_code=404, detail="No price data found for given period")
+        # --- вычисляем метрики только по портфелю ---
+        simulator = PortfolioSimulator(portfolio_series)
+        result = simulator.run()
 
-        # Считаем метрики
-        simulator = PortfolioSimulator(prices)
-        metrics = simulator.calculate_metrics()
-
-        # Готовим данные для графика
-        price_data = [
-            {"date": d.strftime("%Y-%m-%d"), "close": float(p)}
-            for d, p in prices.items()
+        portfolio_points = [
+            PortfolioPoint(date=idx.strftime("%Y-%m-%d"), portfolio_value=float(val))
+            for idx, val in result.cumulative.items()
         ]
 
-        # Возвращаем всё сразу
-        return {
-            "ticker": request.ticker,
-            "start": request.start,
-            "end": request.end,
-            "cagr": metrics["CAGR"],
-            "sharpe": metrics["Sharpe Ratio"],
-            "max_drawdown": metrics["Max Drawdown"],
-            "prices": price_data
-        }
+        return SimulationResponse(
+            cagr=result.cagr,
+            sharpe=result.sharpe,
+            max_drawdown=result.max_drawdown,
+            portfolio=portfolio_points
+        )
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
