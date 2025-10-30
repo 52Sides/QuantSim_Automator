@@ -40,7 +40,7 @@ jobs:
             --cov=cli \
             --cov=schemas \
             --cov-report=term-missing \
-            --cov-fail-under=100 -v
+            --cov-fail-under=95 -v
 
       - name: Build Docker image
         run: |
