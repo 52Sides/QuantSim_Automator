@@ -9,8 +9,9 @@ function App() {
   const [metrics, setMetrics] = useState<any | null>(null)
   const [portfolio, setPortfolio] = useState<{ x: string[]; y: number[] } | null>(null)
   const [loading, setLoading] = useState(false)
-  const [showLogin, setShowLogin] = useState(false)
-  const [showSignup, setShowSignup] = useState(false)
+  // не реализовано
+  // const [showLogin, setShowLogin] = useState(false)
+  // const [showSignup, setShowSignup] = useState(false)
 
   const handleSubmit = async () => {
     setLoading(true)
