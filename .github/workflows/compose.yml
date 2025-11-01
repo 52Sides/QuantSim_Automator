@@ -47,6 +47,11 @@ jobs:
             sleep 5
           done
 
+      - name: Apply Alembic migrations
+        run: |
+          set -e
+          docker compose exec -T backend alembic -c src/db/migrations/alembic.ini upgrade head
+
       - name: Start backend container
         run: |
           docker compose up -d backend
@@ -54,7 +59,7 @@ jobs:
           sleep 10
           docker compose ps
 
-      - name: Run integration tests inside backend
+      - name: Run integration tests
         run: |
           echo "Running pytest inside backend container"
           docker compose exec backend pytest -v -m integration --maxfail=1 --disable-warnings
@@ -65,4 +70,4 @@ jobs:
 
       - name: Tear down environment
         if: always()
-        run: docker compose down -v
+        run: docker compose down --remove-orphans -v
