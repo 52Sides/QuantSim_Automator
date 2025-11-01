@@ -1,26 +1,26 @@
-from datetime import datetime
-
-from sqlalchemy import String, Integer, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, Table
+from sqlalchemy.orm import relationship
 
 from db.database import Base
+
+asset_simulation = Table(
+    "asset_simulation",
+    Base.metadata,
+    Column("asset_id", ForeignKey("assets.id"), primary_key=True),
+    Column("simulation_id", ForeignKey("simulations.id"), primary_key=True),
+)
 
 
 class AssetModel(Base):
     """Актив (ценная бумага и т.д.)"""
     __tablename__ = "assets"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    ticker: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
-    name: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=DateTime(timezone=True), nullable=False
-    )
+    id = Column(Integer, primary_key=True)
+    ticker = Column(String, nullable=False, unique=True)
+    name = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    simulations: Mapped[list["SimulationModel"]] = relationship(
-        back_populates="assets",
-        secondary="simulation_assets",
-    )
+    simulations = relationship("SimulationModel", secondary=asset_simulation, back_populates="assets")
 
     def __repr__(self) -> str:
         return f"<Asset(ticker={self.ticker})>"

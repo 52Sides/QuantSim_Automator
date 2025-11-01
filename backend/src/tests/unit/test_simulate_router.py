@@ -24,7 +24,8 @@ async def test_simulate_router_success(monkeypatch):
     # --- мок симулятора ---
     class FakeSimulator:
 
-        def __init__(self, series): pass
+        def __init__(self, series):
+            pass
 
         def run(self):
             idx = pd.date_range("2020-01-01", "2020-06-01", freq="ME")

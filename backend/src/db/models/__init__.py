@@ -1,5 +1,5 @@
-from db.models.asset_model import AssetModel
-from db.models.simulation_model import SimulationModel, simulation_assets
-from db.models.metric_model import MetricModel
+from .asset_model import AssetModel, asset_simulation
+from .metric_model import MetricModel
+from .simulation_model import SimulationModel
 
-__all__ = ["AssetModel", "SimulationModel", "MetricModel", "simulation_assets"]
+__all__ = ["AssetModel", "MetricModel", "SimulationModel", "asset_simulation"]

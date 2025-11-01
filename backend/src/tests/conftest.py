@@ -72,16 +72,24 @@ def override_db_for_unit_tests(request):
             async def execute(self, *a, **kw):
                 return DummyResult()  # теперь не None
 
-            async def commit(self): pass
-            async def flush(self): pass
-            async def rollback(self): pass
-            def add(self, *a, **kw): pass
+            async def commit(self):
+                pass
+
+            async def flush(self):
+                pass
+
+            async def rollback(self):
+                pass
+
+            def add(self, *a, **kw):
+                pass
 
         async def fake_get_db():
             yield DummySession()
 
         app.dependency_overrides[get_db] = fake_get_db
         yield
+
         app.dependency_overrides.clear()
 
     else:

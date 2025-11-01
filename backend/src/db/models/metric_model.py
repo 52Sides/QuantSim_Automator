@@ -1,7 +1,5 @@
-from datetime import datetime
-
-from sqlalchemy import Integer, Float, DateTime, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Column, Integer, Float, ForeignKey, DateTime, func
+from sqlalchemy.orm import relationship
 
 from db.database import Base
 
@@ -10,18 +8,14 @@ class MetricModel(Base):
     """Финансовые метрики симуляции"""
     __tablename__ = "metrics"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    simulation_id: Mapped[int] = mapped_column(
-        ForeignKey("simulations.id", ondelete="CASCADE"), nullable=False, unique=True
-    )
-    cagr: Mapped[float] = mapped_column(Float, nullable=False)
-    sharpe: Mapped[float] = mapped_column(Float, nullable=False)
-    max_drawdown: Mapped[float] = mapped_column(Float, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=DateTime(timezone=True), nullable=False
-    )
+    id = Column(Integer, primary_key=True)
+    simulation_id = Column(Integer, ForeignKey("simulations.id"), nullable=False)
+    cagr = Column(Float)
+    sharpe = Column(Float)
+    max_drawdown = Column(Float)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    simulation: Mapped["SimulationModel"] = relationship(back_populates="metrics")
+    simulation = relationship("SimulationModel", back_populates="metrics")
 
     def __repr__(self) -> str:
         return (

@@ -8,8 +8,8 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from db.database import Base
-import db.models  # noqa: F401, импорт для регистрации моделей
+from db import models  # noqa: F401
+from db.database import Base  # noqa: F401, импорт для регистрации моделей
 
 # --- Alembic Config ---
 config = context.config
@@ -19,7 +19,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Указываем метаданные моделей
-target_metadata = Base.metadata
+target_metadata = models.Base.metadata
 
 
 # --- Асинхронные функции run_migrations ---
