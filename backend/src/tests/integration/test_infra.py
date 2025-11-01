@@ -67,4 +67,3 @@ def test_kafka_health():
 
     except NoBrokersAvailable as e:
         pytest.skip(f"Kafka broker not reachable: {e}")
-
