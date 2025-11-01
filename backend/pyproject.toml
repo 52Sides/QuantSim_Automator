@@ -4,21 +4,40 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quant-sim-automator"
-version = "0.2.0"
+version = "0.2.3"
 description = "QuantSim Automator: modular portfolio simulation system"
-authors = [
-  { name = "52Sides", email = "everybody.knows.1152@gmail.com" }
-]
+authors = [{ name = "52Sides", email = "everybody.knows.1152@gmail.com" }]
+requires-python = ">=3.11"
 dependencies = [
   "pandas",
   "numpy",
   "typer[all]",
-  "pytest",
   "yfinance",
-  "pytest-cov",
   "fastapi",
   "uvicorn",
-  "httpx"
+  "pydantic",
+  "pydantic-settings",
+  "sqlalchemy",
+  "asyncpg",
+  "psycopg2-binary",
+  "redis",
+  "celery",
+  "kafka-python",
+  "python-dotenv",
+  "httpx",
+  "loguru",
+  "alembic",
+  "tenacity"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "flake8",
+    "black",
+    "isort",
 ]
 
 [tool.setuptools]

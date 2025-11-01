@@ -1,4 +1,4 @@
-name: Docker Compose Build Check
+name: Docker Compose Integration Test
 
 on:
   push:
@@ -7,18 +7,60 @@ on:
     branches: [ main, master ]
 
 jobs:
-  compose-build:
+  integration-test:
     runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:dind
+        options: --privileged
+        ports:
+          - 2375:2375
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build all services
-        run: docker compose build
+      - name: Build all services (no cache)
+        run: docker compose build --no-cache
 
-      - name: List built images
-        run: docker images | grep quantsim || true
+      - name: Start infrastructure (Postgres, Redis, ZooKeeper, Kafka)
+        run: |
+          docker compose up -d postgres redis zookeeper kafka
+          echo "Waiting for infrastructure to become healthy..."
+          sleep 15
+
+      - name: Wait for all containers to be healthy
+        run: |
+          for i in {1..10}; do
+            unhealthy=$(docker compose ps --format json | jq '.[] | select(.Health != null and .Health != "healthy")')
+            if [ -z "$unhealthy" ]; then
+              echo "All containers are healthy"
+              break
+            fi
+            echo "Waiting for healthy containers..."
+            sleep 5
+          done
+
+      - name: Start backend container
+        run: |
+          docker compose up -d backend
+          echo "Waiting for backend startup..."
+          sleep 10
+          docker compose ps
+
+      - name: Run integration tests inside backend
+        run: |
+          echo "Running pytest inside backend container"
+          docker compose exec backend pytest -v -m integration --maxfail=1 --disable-warnings
+
+      - name: Show docker logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down environment
+        if: always()
+        run: docker compose down -v

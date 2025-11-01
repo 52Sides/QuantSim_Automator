@@ -19,29 +19,30 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies (from pyproject.toml)
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e backend
-
-      - name: Install test tools
-        run: |
-          pip install pytest pytest-cov flake8 httpx
+          pip install -e backend[dev]
 
       - name: Lint backend
         run: |
           flake8 backend/src --max-line-length=120 --ignore=E203,W503
 
-      - name: Run tests with coverage
+      - name: Run backend unit tests
         run: |
-          pytest backend/src \
+          pytest backend/src -v -m "not integration" \
             --cov=core \
             --cov=api \
             --cov=cli \
             --cov=schemas \
             --cov-report=term-missing \
-            --cov-fail-under=95 -v
+            --cov-fail-under=95
 
-      - name: Build Docker image
-        run: |
-          docker build -t quantsim-backend:latest -f backend/Dockerfile backend --no-cache
+      - name: Print coverage summary
+        run: coverage report

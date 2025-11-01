@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import simulate
+from api.routers import simulate, system
 
 app = FastAPI(
     title="QuantSim Automator API",
@@ -17,3 +17,4 @@ app.add_middleware(
 )
 
 app.include_router(simulate.router)
+app.include_router(system.router)
