@@ -27,7 +27,7 @@ dependencies = [
   "httpx",
   "loguru",
   "alembic",
-  "tenacity"
+  "tenacity",
   "pytest",
   "pytest-cov",
   "pytest-asyncio",
