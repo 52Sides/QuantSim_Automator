@@ -48,8 +48,7 @@ jobs:
           done
 
       - name: Start backend container
-        run: |
-          docker compose up -d backend
+        run: docker compose up -d backend
 
       - name: Wait for backend to be healthy
         run: |
@@ -59,14 +58,19 @@ jobs:
               echo "Backend is healthy"
               break
             fi
-              echo "Waiting for backend..."
-              sleep 5
+            echo "Waiting for backend..."
+            sleep 5
           done
 
       - name: Start Celery worker
         run: docker compose up -d worker
 
-      - name: Run integration tests
+      - name: Run Celery integration tests
+        run: |
+          echo "Running Celery tests inside backend container"
+          docker compose exec backend pytest -v -m celery --disable-warnings
+
+      - name: Run API & DB integration tests
         run: |
           echo "Running pytest inside backend container"
           docker compose exec backend pytest -v -m integration --disable-warnings

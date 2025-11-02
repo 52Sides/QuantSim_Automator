@@ -121,3 +121,40 @@ def alembic_config():
 
     config = Config(str(alembic_ini_path))
     return config
+
+
+import pytest
+from services.worker.celery_app import celery_app
+
+
+@pytest.fixture(scope="session")
+def celery_enable_logging():
+    """Включаем логирование Celery при интеграционных тестах."""
+    return True
+
+
+@pytest.fixture(scope="session")
+def celery_config():
+    """Конфигурация Celery для тестового окружения."""
+    return {
+        "broker_url": "redis://redis:6379/0",
+        "result_backend": "redis://redis:6379/0",
+        "task_always_eager": False,  # Важно: пусть реально идёт через брокер
+        "task_default_queue": "default",
+        "worker_send_task_events": True,
+    }
+
+
+@pytest.fixture(scope="session")
+def celery_includes():
+    """Указываем Celery, какие таски подхватывать при тестах."""
+    return ["services.worker.tasks"]
+
+
+@pytest.fixture(scope="session")
+def celery_app(celery_app):
+    """
+    Подключает реальный celery_app, который уже определён в нашем проекте.
+    Используется pytest-celery для инициализации воркера.
+    """
+    return celery_app
