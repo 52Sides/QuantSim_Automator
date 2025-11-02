@@ -1,9 +1,10 @@
 import pytest
+from httpx import AsyncClient
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_simulations_history_flow(async_client):
+async def test_simulations_history_flow(async_client: AsyncClient, skip_if_no_postgres):
     # Создаём симуляцию
     payload = {"command": "TSLA-L-50% NVDA-L-50% 2020-01-01 2020-12-31"}
     resp = await async_client.post("/simulate/", json=payload)

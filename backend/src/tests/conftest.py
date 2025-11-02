@@ -22,14 +22,6 @@ def pytest_configure():
     warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-@pytest.fixture
-async def async_client():
-    # Если внутри контейнера backend — localhost
-    base_url = os.getenv("BACKEND_URL", "http://localhost:8000")
-    async with AsyncClient(base_url=base_url) as client:
-        yield client
-
-
 @pytest_asyncio.fixture(scope="function")
 async def db_session():
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
