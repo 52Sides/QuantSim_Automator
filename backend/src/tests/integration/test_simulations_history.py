@@ -5,6 +5,7 @@ import os
 # Определяем адрес backend
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
+
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_simulations_history_flow(skip_if_no_postgres):

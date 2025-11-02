@@ -6,7 +6,6 @@ import warnings
 import inspect
 from pathlib import Path
 
-from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from db.database import Base, get_db
