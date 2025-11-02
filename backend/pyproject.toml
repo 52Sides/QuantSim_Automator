@@ -21,6 +21,7 @@ dependencies = [
   "asyncpg",
   "psycopg2-binary",
   "redis",
+  "aioredis",
   "celery",
   "kafka-python",
   "aiokafka",
