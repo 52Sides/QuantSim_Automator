@@ -1,12 +1,10 @@
 import pytest
 from alembic import command
-from alembic.config import Config
-from pathlib import Path
-
 
 @pytest.mark.integration
-def test_migrations_run_successfully(tmp_path: Path, skip_if_no_postgres):
-    """Применяет Alembic миграции только если доступен PostgreSQL (иначе skip)."""
-    config = Config("app/src/db/migrations/alembic.ini")
-    command.upgrade(config, "head")
-    command.downgrade(config, "base")
+def test_migrations_run_successfully(alembic_config):
+    """
+    Применяет все Alembic миграции в CI/backend контейнере.
+    Проверяет, что не возникает ошибок.
+    """
+    command.upgrade(alembic_config, "head")

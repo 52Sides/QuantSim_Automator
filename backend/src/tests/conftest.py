@@ -4,6 +4,7 @@ import pytest_asyncio
 import socket
 import warnings
 import inspect
+from pathlib import Path
 
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -12,6 +13,8 @@ from db.database import Base, get_db
 from api.main import app
 import api.routers.simulate as simulate_router
 import api.routers.simulations_history as history_router
+from alembic.config import Config
+
 
 
 def pytest_configure():
@@ -33,29 +36,33 @@ async def db_session():
     await engine.dispose()
 
 
-@pytest_asyncio.fixture(scope="function")
+
+
+BACKEND_HOST = os.getenv("BACKEND_HOST", "backend")
+BACKEND_PORT = os.getenv("BACKEND_PORT", "8000")
+BASE_URL = f"http://{BACKEND_HOST}:{BACKEND_PORT}"
+
+@pytest_asyncio.fixture(scope="session")
 async def async_client():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    """
+    Возвращает HTTP-клиент для настоящего backend контейнера.
+    """
+    async with AsyncClient(base_url=BASE_URL, timeout=60.0) as client:
+        yield client
 
 
 @pytest.fixture(autouse=False)
 def skip_if_no_postgres():
-    """Пропускает тест, если нет PostgreSQL (локально)."""
-    db_url = os.getenv("DATABASE_URL", "")
-    is_ci = os.getenv("CI", "").lower() == "true"
+    """
+    Пропускает тесты, если Postgres не доступен внутри контейнера.
+    """
+    db_host = os.getenv("POSTGRES_HOST", "postgres")
+    db_port = int(os.getenv("POSTGRES_PORT", 5432))
 
-    if is_ci or "postgresql" in db_url:
-        # проверим доступность порта для красоты
-        host = "postgres" if "postgres" in db_url else "localhost"
-        try:
-            socket.create_connection((host, 5432), timeout=1).close()
-            return
-        except OSError:
-            pass
-
-    pytest.skip("Пропуск: PostgreSQL не запущен или не в CI окружении.")
+    try:
+        socket.create_connection((db_host, db_port), timeout=1).close()
+    except OSError:
+        pytest.skip(f"Пропуск: PostgreSQL {db_host}:{db_port} недоступен")
 
 
 @pytest.fixture(autouse=True)
@@ -105,3 +112,19 @@ def override_db_for_unit_tests(request):
         app.dependency_overrides.clear()
     else:
         yield
+
+
+@pytest.fixture(scope="session")
+def alembic_config():
+    """
+    Возвращает Alembic Config с корректным script_location.
+    Работает внутри backend контейнера.
+    """
+    # Абсолютный путь до alembic.ini внутри контейнера
+    alembic_ini_path = Path("/app/src/db/migrations/alembic.ini")
+    if not alembic_ini_path.exists():
+        raise FileNotFoundError(f"Alembic ini not found at {alembic_ini_path}")
+
+    config = Config(str(alembic_ini_path))
+    return config
+
