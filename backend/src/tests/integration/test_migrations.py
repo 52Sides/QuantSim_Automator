@@ -1,6 +1,7 @@
 import pytest
 from alembic import command
 
+
 @pytest.mark.integration
 def test_migrations_run_successfully(alembic_config):
     """

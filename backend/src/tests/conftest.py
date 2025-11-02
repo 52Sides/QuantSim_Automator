@@ -6,7 +6,7 @@ import warnings
 import inspect
 from pathlib import Path
 
-from httpx import AsyncClient, ASGITransport
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from db.database import Base, get_db
@@ -14,7 +14,6 @@ from api.main import app
 import api.routers.simulate as simulate_router
 import api.routers.simulations_history as history_router
 from alembic.config import Config
-
 
 
 def pytest_configure():
@@ -34,21 +33,6 @@ async def db_session():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
-
-
-
-
-BACKEND_HOST = os.getenv("BACKEND_HOST", "backend")
-BACKEND_PORT = os.getenv("BACKEND_PORT", "8000")
-BASE_URL = f"http://{BACKEND_HOST}:{BACKEND_PORT}"
-
-@pytest_asyncio.fixture(scope="session")
-async def async_client():
-    """
-    Возвращает HTTP-клиент для настоящего backend контейнера.
-    """
-    async with AsyncClient(base_url=BASE_URL, timeout=60.0) as client:
-        yield client
 
 
 @pytest.fixture(autouse=False)
@@ -127,4 +111,3 @@ def alembic_config():
 
     config = Config(str(alembic_ini_path))
     return config
-

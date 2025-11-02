@@ -38,8 +38,8 @@ KAFKA_PORT = int(os.getenv("KAFKA_PORT", 9092))
 
 
 @pytest.mark.integration
-def test_postgres_connection():
-    dsn = f"host={POSTGRES_HOST} port={POSTGRES_PORT} user=postgres password=postgres dbname=postgres"
+def test_postgres_connection(skip_if_no_postgres):
+    dsn = f"host={POSTGRES_HOST} port={POSTGRES_PORT} user=postgres password=postgres dbname=quantsim_db"
     try:
         with closing(psycopg2.connect(dsn)) as conn:
             with conn.cursor() as cur:
@@ -50,7 +50,7 @@ def test_postgres_connection():
 
 
 @pytest.mark.integration
-def test_redis_ping():
+def test_redis_ping(skip_if_no_postgres):
     try:
         r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
         assert r.ping() is True
@@ -59,7 +59,7 @@ def test_redis_ping():
 
 
 @pytest.mark.integration
-def test_kafka_health():
+def test_kafka_health(skip_if_no_postgres):
     try:
         client = KafkaAdminClient(bootstrap_servers=f"{KAFKA_HOST}:{KAFKA_PORT}")
         topics = client.list_topics()
