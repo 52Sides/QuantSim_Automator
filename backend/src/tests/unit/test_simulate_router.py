@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 
+from api.main import app
 from core import SimulationResult
 
 
@@ -56,3 +57,17 @@ async def test_simulate_router_success(monkeypatch):
     assert set(data.keys()) == {"cagr", "sharpe", "max_drawdown", "portfolio"}
     assert isinstance(data["portfolio"], list)
     assert data["cagr"] == 0.1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_simulate_unexpected_error(monkeypatch):
+    import api.routers.simulate as simulate
+
+    def broken_parse(_): raise RuntimeError("Boom")
+    monkeypatch.setattr(simulate, "parse_command_safe", broken_parse)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.post("/simulate/", json={"command": "ANY"})
+        assert resp.status_code == 400
+        assert "Boom" in resp.text

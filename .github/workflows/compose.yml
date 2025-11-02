@@ -47,17 +47,17 @@ jobs:
             sleep 5
           done
 
-      - name: Apply Alembic migrations
-        run: |
-          set -e
-          docker compose exec -T backend alembic -c src/db/migrations/alembic.ini upgrade head
-
       - name: Start backend container
         run: |
           docker compose up -d backend
           echo "Waiting for backend startup..."
           sleep 10
           docker compose ps
+
+      - name: Apply Alembic migrations
+        run: |
+          set -e
+          docker compose exec -T backend alembic -c src/db/migrations/alembic.ini upgrade head
 
       - name: Run integration tests
         run: |

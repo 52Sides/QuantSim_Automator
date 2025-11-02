@@ -3,12 +3,15 @@ import pytest
 import pytest_asyncio
 import socket
 import warnings
+import inspect
 
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from db.database import Base, get_db
 from api.main import app
+import api.routers.simulate as simulate_router
+import api.routers.simulations_history as history_router
 
 
 def pytest_configure():
@@ -57,20 +60,24 @@ def skip_if_no_postgres():
 
 @pytest.fixture(autouse=True)
 def override_db_for_unit_tests(request):
-    """
-    Автоматически подменяет get_db на мок для unit-тестов,
-    чтобы не подключаться к реальной базе.
-    """
-    from api.main import app
-
     if "unit" in request.keywords:
         class DummyResult:
             def scalar_one_or_none(self):
                 return None
 
+            def scalars(self):
+                class S:
+                    def unique(self):
+                        return self
+
+                    def all(self):
+                        return []
+
+                return S()
+
         class DummySession:
             async def execute(self, *a, **kw):
-                return DummyResult()  # теперь не None
+                return DummyResult()
 
             async def commit(self):
                 pass
@@ -87,10 +94,14 @@ def override_db_for_unit_tests(request):
         async def fake_get_db():
             yield DummySession()
 
+        # Подменяем не только в app, но и во всех зарегистрированных модулях
         app.dependency_overrides[get_db] = fake_get_db
+        for module in (simulate_router, history_router):
+            for name, obj in inspect.getmembers(module):
+                if name == "get_db":
+                    setattr(module, name, fake_get_db)
+
         yield
-
         app.dependency_overrides.clear()
-
     else:
         yield
