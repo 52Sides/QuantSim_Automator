@@ -54,11 +54,6 @@ jobs:
           sleep 10
           docker compose ps
 
-      - name: Apply Alembic migrations
-        run: |
-          set -e
-          docker compose exec -T backend alembic -c src/db/migrations/alembic.ini upgrade head
-
       - name: Run integration tests
         run: |
           echo "Running pytest inside backend container"
