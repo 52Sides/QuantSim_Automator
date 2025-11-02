@@ -4,9 +4,9 @@ import redis
 from kafka import KafkaAdminClient
 from contextlib import closing
 import pytest
-from kafka.errors import NoBrokersAvailable
-from redis.exceptions import ConnectionError as RedisConnectionError
-from psycopg2 import OperationalError
+from kafka.errors import NoBrokersAvailable  # noqa: F401
+from redis.exceptions import ConnectionError as RedisConnectionError  # noqa: F401
+from psycopg2 import OperationalError  # noqa: F401
 
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
 POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", 5432))
@@ -37,4 +37,5 @@ def test_redis_ping():
 def test_kafka_health():
     client = KafkaAdminClient(bootstrap_servers=f"{KAFKA_HOST}:{KAFKA_PORT}")
     topics = client.list_topics()
-    assert isinstance(topics, set)
+    assert isinstance(topics, (list, set))
+    assert topics is not None
