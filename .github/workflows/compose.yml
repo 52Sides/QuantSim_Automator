@@ -66,10 +66,6 @@ jobs:
       - name: Run integration tests
         run: |
           echo "Running pytest inside backend container"
-          export BACKEND_URL="http://quantsim-backend:8000"
-          export POSTGRES_HOST=quantsim-postgres
-          export REDIS_HOST=quantsim-redis
-          export KAFKA_HOST=quantsim-kafka
           docker compose exec backend pytest -v -m integration --maxfail=1 --disable-warnings
 
       - name: Show docker logs on failure
