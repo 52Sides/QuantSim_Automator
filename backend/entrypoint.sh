@@ -13,6 +13,14 @@ until redis-cli -h redis ping | grep PONG; do
   sleep 2
 done
 
+# --- Ждём Kafka ---
+echo "Waiting for Kafka..."
+for i in $(seq 1 20); do
+    kafka-topics --bootstrap-server kafka:9092 --list && break
+    echo "Waiting for Kafka..."
+    sleep 3
+done
+
 # --- Применяем миграции ---
 echo "Running Alembic migrations..."
 alembic -c src/db/migrations/alembic.ini upgrade head

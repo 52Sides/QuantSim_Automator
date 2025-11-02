@@ -50,8 +50,6 @@ jobs:
       - name: Start backend container
         run: |
           docker compose up -d backend
-          echo "Waiting for backend startup..."
-          docker compose ps
 
       - name: Wait for backend to be healthy
         run: |
