@@ -2,7 +2,7 @@ import pytest
 import httpx
 import os
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://quantsim-backend:8000")
 
 
 @pytest.mark.integration
