@@ -13,13 +13,21 @@ from api.main import app
 import api.routers.simulate as simulate_router
 import api.routers.simulations_history as history_router
 from alembic.config import Config
-import os
-import pytest
 from httpx import AsyncClient
 
 
 def pytest_configure():
     warnings.filterwarnings("ignore", category=ResourceWarning)
+
+
+@pytest.fixture(scope="function")
+async def async_client():
+    """
+    Фикстура для реальных integration-тестов.
+    Поднимает httpx.AsyncClient, который шлёт запросы прямо в запущенное FastAPI-приложение.
+    """
+    async with AsyncClient(base_url="http://backend:8000") as client:
+        yield client
 
 
 @pytest_asyncio.fixture(scope="function")
