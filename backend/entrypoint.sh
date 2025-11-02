@@ -15,10 +15,8 @@ done
 
 # --- Ждём Kafka ---
 echo "Waiting for Kafka..."
-for i in $(seq 1 20); do
-    kafka-topics --bootstrap-server kafka:9092 --list && break
-    echo "Waiting for Kafka..."
-    sleep 3
+until nc -z kafka 9092; do
+  sleep 3
 done
 
 # --- Применяем миграции ---

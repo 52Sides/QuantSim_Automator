@@ -63,6 +63,9 @@ jobs:
               sleep 5
           done
 
+      - name: Start Celery worker
+        run: docker compose up -d worker
+
       - name: Run integration tests
         run: |
           echo "Running pytest inside backend container"

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import simulate, system, simulations_history
+from api.routers import simulate, system, simulations_history, simulate_async, simulate_tasks
 
 app = FastAPI(
     title="QuantSim Automator API",
@@ -10,12 +10,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173", "http://frontend:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(simulate.router)
+app.include_router(simulate_async.router)
+app.include_router(simulate_tasks.router)
 app.include_router(system.router)
 app.include_router(simulations_history.router)

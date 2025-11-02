@@ -42,7 +42,7 @@ dependencies = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["api", "cli", "core", "schemas", "db"]
+packages = ["api", "cli", "core", "db", "schemas", "services"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
