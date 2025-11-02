@@ -13,10 +13,21 @@ from api.main import app
 import api.routers.simulate as simulate_router
 import api.routers.simulations_history as history_router
 from alembic.config import Config
+import os
+import pytest
+from httpx import AsyncClient
 
 
 def pytest_configure():
     warnings.filterwarnings("ignore", category=ResourceWarning)
+
+
+@pytest.fixture
+async def async_client():
+    # Если внутри контейнера backend — localhost
+    base_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+    async with AsyncClient(base_url=base_url) as client:
+        yield client
 
 
 @pytest_asyncio.fixture(scope="function")
