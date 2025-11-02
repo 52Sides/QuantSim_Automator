@@ -1,11 +1,14 @@
 import pytest
 import httpx
+import os
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://quantsim-backend:8000")
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_simulate_saves_to_db():
-    async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
+    async with httpx.AsyncClient(base_url=BACKEND_URL) as client:
         payload = {"command": "AAPL-L-100% 2020-01-01 2020-12-31"}
         response = await client.post("/simulate/", json=payload)
         assert response.status_code == 200
