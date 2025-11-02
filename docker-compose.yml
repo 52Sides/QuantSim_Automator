@@ -13,17 +13,14 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
+      - postgres
+      - redis
+      - kafka
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 0"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 20
     restart: always
     networks:
       - quantsim_net

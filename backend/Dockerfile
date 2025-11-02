@@ -15,7 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pyproject.toml ./
 COPY src ./src
 COPY src/db/migrations ./src/db/migrations
+COPY entrypoint.sh /app/entrypoint.sh
 
 RUN pip install --upgrade pip && pip install -e .
 
-CMD ["sh", "-c", "alembic -c src/db/migrations/alembic.ini upgrade head && uvicorn api.main:app --host 0.0.0.0 --port 8000"]
+
+RUN chmod +x /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]
