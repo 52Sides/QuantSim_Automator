@@ -14,9 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY pyproject.toml ./
 COPY src ./src
+COPY src/db/migrations ./src/db/migrations
 
 RUN pip install --upgrade pip && pip install -e .
 
-RUN ls -R ./src/db/migrations || (echo "❌ Migrations not found" && exit 1)
-
-CMD ["sh", "-c", "sleep 3 && uvicorn api.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic -c src/db/migrations/alembic.ini upgrade head && uvicorn api.main:app --host 0.0.0.0 --port 8000"]
