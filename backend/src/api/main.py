@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import simulate, system, simulations_history, simulate_async, simulate_tasks
+from api.routers import simulate, system, simulations_history, simulate_async, simulate_tasks, simulate_kafka
 
 app = FastAPI(
     title="QuantSim Automator API",
@@ -21,3 +21,7 @@ app.include_router(simulate_async.router)
 app.include_router(simulate_tasks.router)
 app.include_router(system.router)
 app.include_router(simulations_history.router)
+app.include_router(simulate_kafka.router)
+
+
+

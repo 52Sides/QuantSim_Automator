@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quant-sim-automator"
-version = "0.2.3"
+version = "0.3.0"
 description = "QuantSim Automator: modular portfolio simulation system"
 authors = [{ name = "52Sides", email = "everybody.knows.1152@gmail.com" }]
 requires-python = ">=3.11"
@@ -23,6 +23,7 @@ dependencies = [
   "redis",
   "celery",
   "kafka-python",
+  "aiokafka",
   "python-dotenv",
   "httpx>=0.27",
   "loguru",
