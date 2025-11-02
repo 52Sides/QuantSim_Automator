@@ -19,7 +19,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Указываем метаданные моделей
-target_metadata = models.Base.metadata
+target_metadata = Base.metadata
 
 
 # --- Асинхронные функции run_migrations ---

@@ -64,7 +64,9 @@ async def test_simulate_router_success(monkeypatch):
 async def test_simulate_unexpected_error(monkeypatch):
     import api.routers.simulate as simulate
 
-    def broken_parse(_): raise RuntimeError("Boom")
+    def broken_parse(_):
+        raise RuntimeError("Boom")
+
     monkeypatch.setattr(simulate, "parse_command_safe", broken_parse)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
