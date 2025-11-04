@@ -1,9 +1,11 @@
 from typer.testing import CliRunner
 from cli.run import app
+import pytest
 
 runner = CliRunner()
 
 
+@pytest.mark.unit
 def test_cli_simulate_success(monkeypatch, tmp_path):
     """Проверяем успешный запуск CLI"""
 
@@ -49,6 +51,7 @@ def test_cli_simulate_success(monkeypatch, tmp_path):
     assert (tmp_path / "result.json").exists()
 
 
+@pytest.mark.unit
 def test_cli_simulate_failure(monkeypatch):
     """Проверяем ошибку при неверной команде"""
     def fail_parse(_):

@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routers import (
-    simulate, system, simulations_history, simulate_async, simulate_tasks, simulate_kafka, ws_simulations
+    simulate, system, simulations_history, simulate_async, simulate_tasks, simulate_kafka,
+    ws_simulations, auth, auth_refresh
 )
 
 app = FastAPI(
@@ -25,6 +26,6 @@ app.include_router(system.router)
 app.include_router(simulations_history.router)
 app.include_router(simulate_kafka.router)
 app.include_router(ws_simulations.router)
-
-
+app.include_router(auth.router)
+app.include_router(auth_refresh.router)
 

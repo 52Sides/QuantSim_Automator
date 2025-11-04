@@ -7,12 +7,18 @@ from schemas.simulation import SimulationRequest, SimulationResponse, PortfolioP
 from core import parse_command_safe, build_portfolio_series, PortfolioSimulator
 from db.database import get_db
 from db.models import AssetModel, SimulationModel, MetricModel
+from api.dependencies.users import get_current_user
+from db.models.user_model import UserModel
 
 router = APIRouter(prefix="/simulate", tags=["Simulation"])
 
 
 @router.post("/", response_model=SimulationResponse)
-async def simulate_portfolio(request: SimulationRequest, db: AsyncSession = Depends(get_db)):
+async def simulate_portfolio(
+    request: SimulationRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
     """Симулирует портфель и сохраняет результат в БД."""
 
     try:
@@ -42,7 +48,7 @@ async def simulate_portfolio(request: SimulationRequest, db: AsyncSession = Depe
             if existing:
                 assets.append(existing)
             else:
-                new_asset = AssetModel(ticker=ticker, name=None)
+                new_asset = AssetModel(ticker=ticker, name=None, created_at=datetime.now(UTC))
                 db.add(new_asset)
                 await db.flush()
                 assets.append(new_asset)
@@ -55,6 +61,7 @@ async def simulate_portfolio(request: SimulationRequest, db: AsyncSession = Depe
             result_json=[p.model_dump() for p in portfolio_points],
             created_at=datetime.now(UTC),
             assets=assets,
+            user_id=current_user.id if current_user else None,
         )
         db.add(simulation)
         await db.flush()

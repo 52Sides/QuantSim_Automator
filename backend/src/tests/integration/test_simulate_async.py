@@ -26,6 +26,7 @@ async def test_get_task_status_running(monkeypatch, async_client: AsyncClient):
     await redis.hset("simulation:test_task", mapping={"status": "running", "progress": 42})
 
     resp = await async_client.get("/simulate/status/test_task")
+
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "running"
@@ -34,7 +35,7 @@ async def test_get_task_status_running(monkeypatch, async_client: AsyncClient):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_worker_saves_result_to_db(db_session: AsyncSession):
+async def test_worker_direct_exec_saves_result_to_db(db_session: AsyncSession):
     # Запускаем задачу напрямую, имитируя Celery
     result = run_simulation_task("AAPL-L-100% 2020-01-01 2020-12-31")
     assert result["status"] == "done"

@@ -26,4 +26,4 @@ class KafkaProducerService:
             await self.start()
         await self._producer.send_and_wait(topic, message)
 
-producer = KafkaProducerService(settings.KAFKA_BROKER)
+producer = KafkaProducerService(settings.kafka_broker)

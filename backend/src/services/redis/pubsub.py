@@ -1,6 +1,6 @@
 import asyncio
 import json
-import aioredis
+import redis.asyncio as redis
 
 
 class AsyncRedisPubSub:
@@ -13,7 +13,7 @@ class AsyncRedisPubSub:
 
     async def connect(self):
         if self._redis is None:
-            self._redis = await aioredis.from_url(self.url, decode_responses=True)
+            self._redis = await redis.from_url(self.url, decode_responses=True)
 
     async def publish(self, message: dict):
         """Публикация сообщения в канал."""

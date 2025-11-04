@@ -4,7 +4,7 @@ from httpx import AsyncClient, ASGITransport
 from api.main import app
 
 
-@pytest.mark.integration
+@pytest.mark.e2e
 @pytest.mark.asyncio
 async def test_simulate_async_full_flow():
     """

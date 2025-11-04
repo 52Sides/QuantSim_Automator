@@ -48,3 +48,24 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
       - KAFKA_CLUSTERS_0_READONLY=false
+
+  # Инициализация Kafka топиков
+  kafka-init:
+    image: python:3.11-slim
+    container_name: quantsim-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+      - ./kafka:/app/kafka
+    working_dir: /app/backend
+    environment:
+      - PYTHONPATH=/app/backend/src
+      - KAFKA_BROKER=kafka:9092
+    command: >
+      bash -c "
+        pip install aiokafka &&
+        python src/services/kafka/init_topics.py
+      "
+    restart: "no"

@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
 import pytest
+
 from core.portfolio_simulator import PortfolioSimulator
 
 
 # ---- Вспомогательная функция ----
+@pytest.mark.unit
 def make_price_series(days: int = 252, start_price: float = 100, daily_return: float = 0.001) -> pd.Series:
     """Создаёт синтетический временной ряд."""
     dates = pd.date_range("2020-01-01", periods=days, freq="B")
@@ -13,6 +15,7 @@ def make_price_series(days: int = 252, start_price: float = 100, daily_return: f
 
 
 # ---- Тест 1: базовые метрики ----
+@pytest.mark.unit
 def test_basic_metrics_positive_growth():
     prices = make_price_series()
     sim = PortfolioSimulator(prices)
@@ -24,6 +27,7 @@ def test_basic_metrics_positive_growth():
 
 
 # ---- Тест 2: стагнация (цены не меняются) ----
+@pytest.mark.unit
 def test_zero_growth_sharpe_is_nan():
     prices = pd.Series([100.0] * 100, index=pd.date_range("2020-01-01", periods=100))
     sim = PortfolioSimulator(prices)
@@ -33,6 +37,7 @@ def test_zero_growth_sharpe_is_nan():
 
 
 # ---- Тест 3: падение цен ----
+@pytest.mark.unit
 def test_negative_growth():
     prices = make_price_series(days=200, daily_return=-0.001)
     sim = PortfolioSimulator(prices)
@@ -42,6 +47,7 @@ def test_negative_growth():
 
 
 # ---- Тест 4: обработка пустого ряда ----
+@pytest.mark.unit
 def test_empty_series_raises():
     empty_series = pd.Series(dtype=float)
     with pytest.raises(Exception):

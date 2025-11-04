@@ -9,13 +9,8 @@ on:
 jobs:
   integration-test:
     runs-on: ubuntu-latest
-
-    services:
-      docker:
-        image: docker:dind
-        options: --privileged
-        ports:
-          - 2375:2375
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     steps:
       - name: Checkout repository
@@ -30,54 +25,55 @@ jobs:
       - name: Start infrastructure (Postgres, Redis, ZooKeeper, Kafka)
         run: |
           docker compose up -d postgres redis zookeeper kafka
-          echo "Waiting for infrastructure to become healthy..."
-          sleep 15
 
-      - name: Wait for all containers to be healthy
+      - name: Wait for healthy state
         run: |
-          echo "Waiting for services to become healthy..."
-          for i in {1..20}; do
+          for i in {1..25}; do
             unhealthy=$(docker inspect --format='{{.Name}} {{.State.Health.Status}}' $(docker ps -q) | grep -v healthy || true)
             if [ -z "$unhealthy" ]; then
-              echo "All containers are healthy"
+              echo "All containers healthy"
               break
             fi
-            echo "Still waiting ($i/20)..."
+            echo "Still waiting ($i/25)..."
             echo "$unhealthy"
-            sleep 5
+            sleep 15
           done
 
-      - name: Start backend container
-        run: docker compose up -d backend
+      - name: Start backend + worker + frontend
+        run: docker compose up -d backend worker frontend
 
-      - name: Wait for backend to be healthy
+      - name: Wait for backend readiness
         run: |
           for i in {1..20}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' quantsim-backend)
-            if [ "$status" = "healthy" ]; then
-              echo "Backend is healthy"
+            if curl -s http://localhost:8000/docs > /dev/null; then
+              echo "Backend ready"
               break
             fi
             echo "Waiting for backend..."
             sleep 5
           done
 
-      - name: Start Celery worker
-        run: docker compose up -d worker
-
-      - name: Run Celery integration tests
+      - name: Run backend integration tests
         run: |
-          echo "Running Celery tests inside backend container"
-          docker compose exec backend pytest -v -m celery --disable-warnings
+          echo "Running integration pytest suite..."
+          docker compose exec backend pytest -v -m "integration or celery" --disable-warnings
 
-      - name: Run API & DB integration tests
+      - name: Run Playwright realtime E2E test
         run: |
-          echo "Running pytest inside backend container"
-          docker compose exec backend pytest -v -m integration --disable-warnings
+          docker compose exec frontend npm install -D @playwright/test
+          docker compose exec frontend npx playwright install --with-deps
+          docker compose exec frontend npx playwright test tests/e2e/simulation-realtime.spec.ts --project=chromium --reporter=line
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
 
       - name: Show docker logs on failure
         if: failure()
-        run: docker compose logs
+        run: docker compose logs backend worker kafka frontend
 
       - name: Tear down environment
         if: always()

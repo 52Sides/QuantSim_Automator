@@ -10,13 +10,12 @@ import redis.asyncio as aioredis
 
 
 @shared_task(name="run_simulation_task")
-def run_simulation_task(command: str) -> dict:
+def run_simulation_task(command: str, user_id: int | None = None) -> dict:
     """
     Фоновая задача: симулирует портфель, публикует прогресс в Redis,
-    сохраняет результат в базу.
+    сохраняет результат в базу и связывает с пользователем (если передан user_id).
     """
     async def _inner():
-        # --- Инициализация Redis ---
         redis_client = aioredis.from_url("redis://redis:6379", decode_responses=True)
         task_key = f"simulation:{command}"
         await redis_client.hset(task_key, mapping={"status": "running", "progress": 0})
@@ -62,6 +61,7 @@ def run_simulation_task(command: str) -> dict:
                     result_json=portfolio_points,
                     created_at=datetime.now(UTC),
                     assets=assets,
+                    user_id=user_id,
                 )
                 db.add(sim)
                 await db.flush()
@@ -80,7 +80,9 @@ def run_simulation_task(command: str) -> dict:
             payload = {
                 "status": "done",
                 "progress": 100,
+                "user_id": user_id,
                 "result": {
+                    "simulation_id": sim.id,
                     "cagr": result.cagr,
                     "sharpe": result.sharpe,
                     "max_drawdown": result.max_drawdown,
@@ -94,8 +96,9 @@ def run_simulation_task(command: str) -> dict:
 
         except Exception as e:
             await redis_client.hset(task_key, mapping={"status": "error", "error": str(e)})
-            await redis_client.publish("simulations", json.dumps({"status": "error", "error": str(e)}))
+            await redis_client.publish(
+                "simulations", json.dumps({"status": "error", "error": str(e), "user_id": user_id})
+            )
             raise
 
-    # В Celery-задаче запускаем асинхронно
     return asyncio.run(_inner())

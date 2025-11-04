@@ -2,6 +2,7 @@ import pytest
 from core.command_parser import parse_command_safe, CommandValidationError
 
 
+@pytest.mark.unit
 def test_valid_command_single():
     cmd = "AAPL-L-100% 2020-01-01 2021-01-01"
     weights, sides, start, end = parse_command_safe(cmd)
@@ -11,6 +12,7 @@ def test_valid_command_single():
     assert end == "2021-01-01"
 
 
+@pytest.mark.unit
 def test_valid_command_multi():
     cmd = "TSLA-L-50% AAPL-S-50% 2020-01-01 2021-01-01"
     weights, sides, _, _ = parse_command_safe(cmd)
@@ -19,6 +21,7 @@ def test_valid_command_multi():
     assert abs(sum(weights.values()) - 1.0) < 1e-6
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("bad_cmd", [
     "",  # пустая
     "AAPL-L-50% 2020-01-01",  # нет end

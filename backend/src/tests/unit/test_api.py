@@ -11,7 +11,6 @@ async def test_simulate_valid_command():
         response = await client.post("/simulate/", json={"command": "TSLA-L-50% AAPL-S-50% 2020-01-01 2021-01-01"})
 
     assert response.status_code == 200
-
     data = response.json()
     assert "cagr" in data
     assert "sharpe" in data

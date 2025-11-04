@@ -1,6 +1,8 @@
 import importlib
+import pytest
 
 
+@pytest.mark.unit
 def test_settings_loads_with_defaults(monkeypatch):
     env_vars = {
         "POSTGRES_USER": "postgres",

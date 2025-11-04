@@ -16,6 +16,7 @@ def patch_fetcher(monkeypatch):
     monkeypatch.setattr("core.portfolio_builder.fetch_price_series", fake_fetch_price_series)
 
 
+@pytest.mark.unit
 def test_build_portfolio_long():
     weights = {"AAPL": 1.0}
     sides = {"AAPL": "L"}
@@ -25,6 +26,7 @@ def test_build_portfolio_long():
     assert series.iloc[-1] > series.iloc[0]
 
 
+@pytest.mark.unit
 def test_build_portfolio_short(monkeypatch):
     weights = {"AAPL": 1.0}
     sides = {"AAPL": "S"}

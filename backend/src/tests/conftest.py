@@ -7,13 +7,14 @@ import inspect
 from pathlib import Path
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from httpx import AsyncClient
+import asyncio
 
 from db.database import Base, get_db
 from api.main import app
 import api.routers.simulate as simulate_router
 import api.routers.simulations_history as history_router
 from alembic.config import Config
-from httpx import AsyncClient
 
 
 def pytest_configure():
@@ -158,3 +159,41 @@ def celery_app(celery_app):
     Используется pytest-celery для инициализации воркера.
     """
     return celery_app
+
+# --- AUTH TEST FIXTURES ---
+
+@pytest_asyncio.fixture(scope="function")
+async def async_test_db():
+    """
+    Отдельная БД для unit/integration-тестов (SQLite in-memory).
+    Сбрасывает все таблицы перед каждым тестом.
+    """
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async def _get_test_db():
+        async with async_session() as session:
+            yield session
+
+    # Подменяем зависимость get_db → тестовую
+    app.dependency_overrides[get_db] = _get_test_db
+
+    yield async_session
+
+    app.dependency_overrides.clear()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def test_client(async_test_db):
+    """
+    Клиент для запросов в тестовом приложении.
+    Работает с in-memory базой.
+    """
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client

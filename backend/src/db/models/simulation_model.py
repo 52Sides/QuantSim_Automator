@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, JSON, DateTime, func
+from sqlalchemy import Column, Integer, String, Date, JSON, DateTime, func, ForeignKey
 from sqlalchemy.orm import relationship
 from db.database import Base
 
@@ -13,6 +13,9 @@ class SimulationModel(Base):
     end_date = Column(Date, nullable=False)
     result_json = Column(JSON, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    user = relationship("UserModel", backref="simulations")
 
     metrics = relationship(
         "MetricModel",

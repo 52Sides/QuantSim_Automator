@@ -1,0 +1,5 @@
+{
+  "name": "report-events",
+  "num_partitions": 1,
+  "replication_factor": 1
+}
