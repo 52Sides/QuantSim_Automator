@@ -16,7 +16,7 @@ export default function SignUpForm({ onClose }: { onClose: () => void }) {
         onClose()
       }
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Registration failed')
+      alert(err.response?.data?.detail || 'Signup failed')
     } finally {
       setLoading(false)
     }
@@ -39,7 +39,7 @@ export default function SignUpForm({ onClose }: { onClose: () => void }) {
         />
         <input
           type="password"
-          placeholder="Password (min 6 chars)"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full mb-4 p-2 rounded border dark:bg-gray-700 dark:border-gray-600"

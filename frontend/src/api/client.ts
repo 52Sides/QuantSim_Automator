@@ -8,9 +8,7 @@ const api = axios.create({
 // Добавляем токен к каждому запросу
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
