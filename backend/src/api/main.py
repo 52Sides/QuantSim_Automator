@@ -4,12 +4,18 @@ from api.routers import (
     simulate, system, simulations_history, simulate_async, simulate_tasks, simulate_kafka,
     ws_simulations, auth, auth_refresh
 )
+from prometheus_fastapi_instrumentator import Instrumentator
+
 
 app = FastAPI(
     title="QuantSim Automator API",
     description="API для симуляции портфеля и расчёта метрик",
     version="0.2.0",
 )
+
+# --- Prometheus instrumentation ---
+instrumentator = Instrumentator().instrument(app)
+instrumentator.expose(app, endpoint="/metrics", include_in_schema=False)
 
 app.add_middleware(
     CORSMiddleware,

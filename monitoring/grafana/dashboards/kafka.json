@@ -1,0 +1,41 @@
+{
+  "id": null,
+  "title": "Kafka Monitoring",
+  "tags": ["Kafka", "Exporter"],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 1,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Kafka Topic Message Rate",
+      "targets": [
+        {
+          "expr": "rate(kafka_topic_partition_current_offset[1m])",
+          "legendFormat": "{{topic}}"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "type": "graph",
+      "title": "Kafka Consumer Lag",
+      "targets": [
+        {
+          "expr": "kafka_consumergroup_lag",
+          "legendFormat": "{{consumergroup}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Under-replicated Partitions",
+      "targets": [
+        {
+          "expr": "sum(kafka_topic_partition_under_replicated_partition) by (topic)",
+          "legendFormat": "{{topic}}"
+        }
+      ]
+    }
+  ]
+}

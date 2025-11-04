@@ -1,0 +1,38 @@
+{
+  "title": "Redis Health",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Connected Clients",
+      "targets": [
+        {
+          "expr": "redis_connected_clients",
+          "legendFormat": "clients"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Commands per Second",
+      "targets": [
+        {
+          "expr": "rate(redis_commands_processed_total[1m])",
+          "legendFormat": "ops/sec"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Used Memory (MB)",
+      "targets": [
+        {
+          "expr": "redis_memory_used_bytes / 1024 / 1024",
+          "legendFormat": "used MB"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 27,
+  "version": 1
+}

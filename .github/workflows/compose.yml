@@ -22,9 +22,10 @@ jobs:
       - name: Build all services (no cache)
         run: docker compose build --no-cache
 
-      - name: Start infrastructure (Postgres, Redis, ZooKeeper, Kafka)
+      # Инфраструктура
+      - name: Start infrastructure (Postgres, Redis, ZooKeeper, Kafka, Prometheus)
         run: |
-          docker compose up -d postgres redis zookeeper kafka
+          docker compose up -d postgres redis zookeeper kafka prometheus
 
       - name: Wait for healthy state
         run: |
@@ -39,8 +40,9 @@ jobs:
             sleep 15
           done
 
-      - name: Start backend + worker + frontend
-        run: docker compose up -d backend worker frontend
+      # Основные сервисы
+      - name: Start backend + worker + frontend + grafana
+        run: docker compose up -d backend worker frontend grafana
 
       - name: Wait for backend readiness
         run: |
@@ -53,6 +55,52 @@ jobs:
             sleep 5
           done
 
+      # Проверка Prometheus и Grafana
+      - name: Wait for Prometheus
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:9090/-/healthy > /dev/null; then
+              echo "Prometheus is up"
+              break
+            fi
+            echo "Waiting for Prometheus..."
+            sleep 5
+          done
+
+      - name: Wait for Grafana
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:3000/login > /dev/null; then
+              echo "Grafana is up"
+              break
+            fi
+            echo "Waiting for Grafana..."
+            sleep 5
+          done
+
+      - name: Wait for Prometheus
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:9090/api/v1/status/config > /dev/null; then
+              echo "Prometheus is up"
+              break
+            fi
+            echo "Waiting for Prometheus..."
+            sleep 5
+          done
+
+      - name: Wait for Redis Exporter
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:9121/metrics > /dev/null; then
+              echo "Redis exporter is up"
+              break
+            fi
+            echo "Waiting for Redis exporter..."
+            sleep 5
+          done
+
+      # Тесты
       - name: Run backend integration tests
         run: |
           echo "Running integration pytest suite..."
@@ -71,10 +119,12 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
 
+      # Диагностика
       - name: Show docker logs on failure
         if: failure()
-        run: docker compose logs backend worker kafka frontend
+        run: docker compose logs backend worker kafka frontend prometheus grafana
 
+      # Очистка
       - name: Tear down environment
         if: always()
         run: docker compose down --remove-orphans -v

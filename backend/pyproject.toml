@@ -41,7 +41,8 @@ dependencies = [
   "alembic>=1.13",
   "aiosqlite",
   "jose",
-  "passlib"
+  "passlib",
+  "prometheus-fastapi-instrumentator>=6.0.0"
 ]
 
 [tool.setuptools]

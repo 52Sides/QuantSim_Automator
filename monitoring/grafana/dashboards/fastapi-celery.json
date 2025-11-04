@@ -1,0 +1,51 @@
+{
+  "id": null,
+  "title": "QuantSim Monitoring",
+  "tags": ["FastAPI", "Celery", "QuantSim"],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 1,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "FastAPI Request Duration",
+      "targets": [
+        {
+          "expr": "rate(http_request_duration_seconds_sum[1m]) / rate(http_request_duration_seconds_count[1m])",
+          "legendFormat": "{{path}}"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "type": "graph",
+      "title": "FastAPI Error Rate",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status!~\"2..\"}[5m])) by (status)",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Celery Task Duration",
+      "targets": [
+        {
+          "expr": "celery_task_runtime_seconds_sum / celery_task_runtime_seconds_count",
+          "legendFormat": "{{task}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "System CPU Usage",
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    }
+  ]
+}
