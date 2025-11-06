@@ -15,6 +15,7 @@ from api.main import app
 import api.routers.simulate as simulate_router
 import api.routers.simulations_history as history_router
 from alembic.config import Config
+from db.models import SimulationModel
 
 
 def pytest_configure():
@@ -197,3 +198,15 @@ async def test_client(async_test_db):
     """
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
+
+
+@pytest.fixture
+def mock_simulation_in_db(db_session):
+    sim = SimulationModel(
+        command="TSLA-L-50% AAPL-S-50%",
+        metrics={"cagr": 0.12, "sharpe": 1.4, "max_drawdown": 0.15},
+        portfolio=[{"date": "2021-01-01", "portfolio_value": 10000}]
+    )
+    db_session.add(sim)
+    db_session.commit()
+    return sim

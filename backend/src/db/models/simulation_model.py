@@ -29,5 +29,11 @@ class SimulationModel(Base):
         back_populates="simulations",
     )
 
+    report = relationship(
+        "ReportModel",
+        uselist=False,
+        back_populates="simulation"
+    )
+
     def __repr__(self) -> str:
         return f"<Simulation(id={self.id}, command={self.command})>"

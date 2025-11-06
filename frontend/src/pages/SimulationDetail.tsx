@@ -8,6 +8,7 @@ export default function SimulationDetail() {
   const navigate = useNavigate()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [reportStatus, setReportStatus] = useState<'idle' | 'queued' | 'ready' | 'error'>('idle')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,13 +24,54 @@ export default function SimulationDetail() {
     fetchData()
   }, [id])
 
+  // polling отчёта, если он в статусе queued
+  useEffect(() => {
+    if (reportStatus !== 'queued') return
+
+    const interval = setInterval(async () => {
+      try {
+        const resp = await api.get(`/report/${id}`)
+        if (resp.headers['content-type']?.includes('application/vnd.openxmlformats')) {
+          // если API вернул сам файл → сразу скачиваем
+          window.location.href = `${import.meta.env.VITE_API_URL}/report/${id}`
+          clearInterval(interval)
+          setReportStatus('ready')
+        } else if (resp.data.status === 'ready') {
+          window.location.href = `${import.meta.env.VITE_API_URL}/report/${id}`
+          clearInterval(interval)
+          setReportStatus('ready')
+        }
+      } catch (err) {
+        console.warn('Polling error', err)
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [reportStatus, id])
+
+  const handleDownload = async () => {
+    try {
+      const resp = await api.get(`/report/${id}`)
+      if (resp.data.status === 'queued') {
+        setReportStatus('queued')
+        alert('Report generation started, please wait a few seconds...')
+      } else {
+        window.location.href = `${import.meta.env.VITE_API_URL}/report/${id}`
+        setReportStatus('ready')
+      }
+    } catch (err) {
+      alert('Failed to request report')
+      setReportStatus('error')
+    }
+  }
+
   if (loading) {
-  return (
-    <div className="flex justify-center mt-10">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600" />
-    </div>
-  )
-}
+    return (
+      <div className="flex justify-center mt-10">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600" />
+      </div>
+    )
+  }
   if (!data) return <div className="text-center py-20">No data</div>
 
   return (
@@ -49,7 +91,11 @@ export default function SimulationDetail() {
         <MetricCard label="Sharpe" value={data.metrics.sharpe?.toFixed(3) ?? '-'} />
         <MetricCard
           label="Max Drawdown"
-          value={data.metrics.max_drawdown ? `${(data.metrics.max_drawdown * 100).toFixed(2)}%` : '-'}
+          value={
+            data.metrics.max_drawdown
+              ? `${(data.metrics.max_drawdown * 100).toFixed(2)}%`
+              : '-'
+          }
         />
       </div>
 
@@ -70,6 +116,14 @@ export default function SimulationDetail() {
         config={{ displayModeBar: false, responsive: true }}
         style={{ width: '100%', height: '420px' }}
       />
+
+      <button
+        onClick={handleDownload}
+        disabled={reportStatus === 'queued'}
+        className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-60"
+      >
+        {reportStatus === 'queued' ? 'Generating Report...' : 'Download XLSX Report'}
+      </button>
     </div>
   )
 }

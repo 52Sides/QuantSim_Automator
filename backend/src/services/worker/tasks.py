@@ -1,19 +1,24 @@
 from datetime import datetime, UTC
+import asyncio
+import json
+
+import redis.asyncio as aioredis
 from celery import shared_task
+
 from core import parse_command_safe, build_portfolio_series, PortfolioSimulator
 from db.database import AsyncSessionLocal
 from db.models import SimulationModel, MetricModel, AssetModel
 from schemas.simulation import PortfolioPoint
-import asyncio
-import json
-import redis.asyncio as aioredis
+from services.reports import generate_xlsx_report
+from services.reports_cache import set_report_status
+from services.worker.celery_app import celery_app
 
 
 @shared_task(name="run_simulation_task")
 def run_simulation_task(command: str, user_id: int | None = None) -> dict:
     """
     Фоновая задача: симулирует портфель, публикует прогресс в Redis,
-    сохраняет результат в базу и связывает с пользователем (если передан user_id).
+    сохраняет результат в базу и связывает с пользователем.
     """
     async def _inner():
         redis_client = aioredis.from_url("redis://redis:6379", decode_responses=True)
@@ -102,3 +107,17 @@ def run_simulation_task(command: str, user_id: int | None = None) -> dict:
             raise
 
     return asyncio.run(_inner())
+
+
+@celery_app.task(name="generate_report_task")
+def generate_report_task(simulation_id: int):
+    async def _inner():
+        await set_report_status(simulation_id, "running")
+        async with AsyncSessionLocal() as db:
+            sim = await db.get(SimulationModel, simulation_id)
+            if not sim:
+                await set_report_status(simulation_id, "error")
+                return
+            path = await generate_xlsx_report(sim)
+            await set_report_status(simulation_id, "ready", str(path))
+    asyncio.run(_inner())

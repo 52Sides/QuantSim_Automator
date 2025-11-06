@@ -42,7 +42,8 @@ dependencies = [
   "aiosqlite",
   "jose",
   "passlib",
-  "prometheus-fastapi-instrumentator>=6.0.0"
+  "prometheus-fastapi-instrumentator>=6.0.0",
+  "openpyxl"
 ]
 
 [tool.setuptools]

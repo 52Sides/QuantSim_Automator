@@ -1,16 +1,14 @@
 from celery import Celery
 import os
 
-# Celery configuration
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 
 celery_app = Celery(
     "quantsim",
     broker=REDIS_URL,
-    backend=REDIS_URL,  # хранение статусов и результатов
+    backend=REDIS_URL,
 )
 
-# Опции по умолчанию
 celery_app.conf.update(
     broker_connection_retry_on_startup=True,
     task_serializer="json",
