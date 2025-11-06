@@ -1,4 +1,4 @@
-backend/src/quant_sim_automator.egg-info/
+
 venv
 # IDE
 *.idea/
@@ -38,3 +38,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.env_secret

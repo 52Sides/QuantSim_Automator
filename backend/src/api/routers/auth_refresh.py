@@ -18,7 +18,7 @@ async def refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)):
     if not token_obj or token_obj.expires_at < datetime.utcnow():
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
 
-    new_access = create_access_token({"sub": str(token_obj.user_id)})
+    new_access = create_access_token(str(token_obj.user_id))
     return {"access_token": new_access, "token_type": "bearer"}
 
 

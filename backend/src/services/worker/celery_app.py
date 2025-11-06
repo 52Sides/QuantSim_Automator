@@ -1,12 +1,13 @@
 from celery import Celery
-import os
+from celery.schedules import crontab
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+from core.config import settings
+
 
 celery_app = Celery(
     "quantsim",
-    broker=REDIS_URL,
-    backend=REDIS_URL,
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL,
 )
 
 celery_app.conf.update(
@@ -19,7 +20,19 @@ celery_app.conf.update(
     task_time_limit=600,
 )
 
+
 @celery_app.task(name="ping")
 def ping():
-    """Простейшая проверка, что Celery работает"""
     return "pong"
+
+
+celery_app.conf.beat_schedule = {
+    "vacuum-analyze-db-nightly": {
+        "task": "vacuum_analyze_task",
+        "schedule": crontab(hour=3, minute=0),
+    },
+    "cluster-asset-prices-monthly": {
+        "task": "cluster_asset_prices_task",
+        "schedule": crontab(day_of_month=1, hour=4, minute=0),
+    },
+}

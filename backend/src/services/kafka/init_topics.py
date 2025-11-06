@@ -14,7 +14,7 @@ TOPICS_PATH = Path(__file__).resolve().parents[3] / "kafka" / "topics_config"
 async def create_topics():
     admin = AIOKafkaAdminClient(bootstrap_servers=settings.KAFKA_BROKER)
     await admin.start()
-    logger.info("🔍 Checking Kafka topics...")
+    logger.info("Checking Kafka topics")
 
     try:
         existing = await admin.list_topics()
@@ -25,7 +25,7 @@ async def create_topics():
                 cfg = json.load(f)
             name = cfg["name"]
             if name not in existing:
-                logger.info(f"📦 Creating topic: {name}")
+                logger.info(f"Creating topic: {name}")
                 new_topics.append(
                     NewTopic(
                         name=name,
@@ -36,9 +36,9 @@ async def create_topics():
 
         if new_topics:
             await admin.create_topics(new_topics)
-            logger.info(f"✅ Created {len(new_topics)} topics")
+            logger.info(f"Created {len(new_topics)} topics")
         else:
-            logger.info("👌 All topics already exist")
+            logger.info("All topics already exist")
 
     finally:
         await admin.close()

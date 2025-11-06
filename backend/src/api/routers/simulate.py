@@ -2,6 +2,7 @@ from datetime import datetime, UTC
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import select
 
 from schemas.simulation import SimulationRequest, SimulationResponse, PortfolioPoint
 from core import parse_command_safe, build_portfolio_series, PortfolioSimulator
@@ -41,9 +42,7 @@ async def simulate_portfolio(
         # --- 4. Сохраняем активы ---
         assets = []
         for ticker in tickers:
-            stmt = await db.execute(
-                AssetModel.__table__.select().where(AssetModel.ticker == ticker)
-            )
+            stmt = await db.execute(select(AssetModel).where(AssetModel.ticker == ticker))
             existing = stmt.scalar_one_or_none()
             if existing:
                 assets.append(existing)

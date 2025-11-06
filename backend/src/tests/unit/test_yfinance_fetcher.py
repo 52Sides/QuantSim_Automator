@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 import yfinance as yf
-from core.fetchers.yfinance_fetcher import fetch_price_series
+from core.fetchers.yfinance_fetcher import fetch_ticker_data
 
 
 def test_fetch_price_series_returns_series(monkeypatch):
@@ -13,7 +13,7 @@ def test_fetch_price_series_returns_series(monkeypatch):
 
     monkeypatch.setattr(yf, "download", fake_download)
 
-    result = fetch_price_series("AAPL", "2024-01-01", "2024-01-03")
+    result = fetch_ticker_data("AAPL", "2024-01-01", "2024-01-03")
 
     assert isinstance(result, pd.Series)
     assert result.name == "close"
@@ -26,4 +26,4 @@ def test_fetch_price_series_empty_data(monkeypatch):
     monkeypatch.setattr(yf, "download", lambda *a, **k: pd.DataFrame())
 
     with pytest.raises(RuntimeError):
-        fetch_price_series("AAPL", "2024-01-01", "2024-01-03")
+        fetch_ticker_data("AAPL", "2024-01-01", "2024-01-03")

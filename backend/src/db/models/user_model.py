@@ -8,7 +8,7 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False, index=True)
-    hashed_password: Mapped[str] = mapped_column(String(256), nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(256), nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.utcnow)
 
     simulations = relationship("SimulationModel", back_populates="user")

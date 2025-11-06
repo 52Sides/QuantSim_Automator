@@ -11,7 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
-
+      JWT_ALGORITHM: ${{ secrets.JWT_ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
     steps:
       - name: Checkout repository
@@ -40,10 +44,12 @@ jobs:
       - name: Run backend unit tests
         run: |
           pytest backend/src -v -m "not integration" \
-            --cov=core \
             --cov=api \
             --cov=cli \
+            --cov=core \
+            --cov=db \
             --cov=schemas \
+            --cov=services \
             --cov-report=term-missing \
             --cov-fail-under=95
 

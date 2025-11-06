@@ -4,6 +4,7 @@ from api.routers import (
     simulate, system, simulations_history, simulate_async, simulate_tasks, simulate_kafka,
     ws_simulations, auth, auth_refresh
 )
+from services.kafka.producer import producer
 from prometheus_fastapi_instrumentator import Instrumentator
 
 
@@ -13,18 +14,35 @@ app = FastAPI(
     version="0.2.0",
 )
 
-# --- Prometheus instrumentation ---
+# === Kafka init ===
+@app.on_event("startup")
+async def startup_event():
+    await producer.start()
+    print("Kafka producer started")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await producer.stop()
+    print("Kafka producer stopped")
+
+# === Prometheus metrics ===
 instrumentator = Instrumentator().instrument(app)
 instrumentator.expose(app, endpoint="/metrics", include_in_schema=False)
 
+# === CORS ===
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173", "http://frontend:5173"],
+    allow_origins=[
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://frontend:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# === Routers ===
 app.include_router(simulate.router)
 app.include_router(simulate_async.router)
 app.include_router(simulate_tasks.router)
@@ -34,4 +52,3 @@ app.include_router(simulate_kafka.router)
 app.include_router(ws_simulations.router)
 app.include_router(auth.router)
 app.include_router(auth_refresh.router)
-

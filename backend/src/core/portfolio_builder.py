@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import Dict
 
-from core.fetchers.yfinance_fetcher import fetch_price_series
+from core.fetchers.yfinance_fetcher import fetch_ticker_data
 
 
 def build_portfolio_series(
@@ -15,7 +15,7 @@ def build_portfolio_series(
 
     data = {}
     for ticker, weight in weights.items():
-        s = fetch_price_series(ticker, start, end)
+        s = fetch_ticker_data(ticker, start, end)
         if s.empty:
             raise ValueError(f"No data for {ticker}")
         if sides[ticker] == "S":  # short

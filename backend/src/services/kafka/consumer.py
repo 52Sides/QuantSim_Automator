@@ -1,32 +1,44 @@
 import asyncio
 import json
 import logging
+
 from aiokafka import AIOKafkaConsumer
-from services.worker.tasks import run_simulation_task
-from services.redis.pubsub import AsyncRedisPubSub
+
 from core.config import settings
 from db.database import AsyncSessionLocal
 from db.models.metric_model import MetricModel
+from services.worker.tasks import run_simulation_task
+from services.redis.pubsub import AsyncRedisPubSub
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
 async def consume_simulation_requests():
-    """Слушает команды симуляции и запускает Celery-задачи."""
     consumer = AIOKafkaConsumer(
         settings.KAFKA_SIMULATION_TOPIC,
         bootstrap_servers=settings.KAFKA_BROKER,
-        group_id="simulation_workers",
-        value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+        group_id="simulation-consumers",
+        enable_auto_commit=True,
+        auto_offset_reset="earliest",
     )
+
     await consumer.start()
+    print(f"[Kafka] Listening on topic: {settings.KAFKA_SIMULATION_TOPIC}")
+
     try:
         async for msg in consumer:
-            cmd = msg.value.get("command")
-            if cmd:
-                logger.info(f"Received simulation command: {cmd}")
-                run_simulation_task.delay(cmd)
+            try:
+                data = json.loads(msg.value.decode("utf-8"))
+                command = data.get("command")
+                user_id = data.get("user_id")
+                if not command:
+                    print(f"[Kafka] Invalid message: {data}")
+                    continue
+                print(f"[Kafka] Received simulation request: {command} (user_id={user_id})")
+                run_simulation_task.delay(command, user_id)
+            except Exception as e:
+                print(f"[Kafka] Error processing message: {e}")
     finally:
         await consumer.stop()
 
@@ -69,7 +81,7 @@ async def consume_metrics_events():
 # Kafka → Redis Bridge: пересылка событий симуляций фронтенду через WebSocket
 async def consume_simulation_events():
     consumer = AIOKafkaConsumer(
-        "portfolio-events",
+        "simulation_requests",
         bootstrap_servers=settings.KAFKA_BROKER,
         group_id="simulation_events_bridge",
         value_deserializer=lambda m: json.loads(m.decode("utf-8")),
@@ -92,11 +104,3 @@ async def consume_simulation_events():
         await consumer.stop()
         await pubsub.close()
         logger.info("Stopped portfolio-events bridge")
-
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(consume_simulation_requests())
-    loop.create_task(consume_metrics_events())
-    loop.create_task(consume_simulation_events())
-    loop.run_forever()

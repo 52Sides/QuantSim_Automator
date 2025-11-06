@@ -9,7 +9,9 @@ services:
     container_name: quantsim-backend
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/quantsim_db
-    env_file: .env
+    env_file:
+      - .env
+      - .env_secret
     ports:
       - "8000:8000"
     depends_on:
@@ -127,24 +129,41 @@ services:
     build:
       context: ./backend
     container_name: quantsim-worker
-    command: sh -c "celery -A src.services.worker.celery_app worker --loglevel=info & python -m src.services.kafka.consumer"
-    env_file: .env
+    command: celery -A src.services.worker.celery_app worker --loglevel=info
+    env_file:
+      - .env
+      - .env_secret
     depends_on:
       - backend
       - redis
+      - kafka
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "for i in {1..3}; do celery -A src.services.worker.celery_app inspect ping -d celery@$(hostname) && exit 0; sleep 5; done; exit 1"]
+      test: [ "CMD-SHELL", "for i in {1..3}; do celery -A src.services.worker.celery_app inspect ping -d celery@$(hostname) && exit 0; sleep 5; done; exit 1" ]
       interval: 20s
       timeout: 10s
       retries: 3
     networks:
       - quantsim_net
 
+  kafka_consumer:
+    build:
+      context: ./backend
+    container_name: quantsim-kafka-consumer
+    command: python -m src.services.kafka.consumer
+    env_file:
+      - .env
+      - .env_secret
+    depends_on:
+      - kafka
+      - backend
+      - redis
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
+      - prometheus_data:/prometheus
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -168,6 +187,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     volumes:
+      - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning/datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml
       - ./monitoring/grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards.yml
       - ./monitoring/grafana/dashboards:/etc/grafana/dashboards
@@ -224,6 +244,26 @@ services:
     ports:
       - "8089:8089"
 
+  celery_beat:
+    build:
+      context: ./backend
+    container_name: quantsim-celery-beat
+    command: celery -A src.services.worker.celery_app beat --loglevel=info
+    env_file:
+      - .env
+      - .env_secret
+    depends_on:
+      - backend
+      - worker
+      - kafka
+      - redis
+    restart: always
+    networks:
+      - quantsim_net
+
+
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
