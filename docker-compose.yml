@@ -216,5 +216,14 @@ services:
     volumes:
       - /:/host:ro,rslave
 
+  locust:
+    image: locustio/locust
+    command: -f ./backend/tests/load/locustfile.py --host=http://backend:8000
+    volumes:
+      - ./backend/tests/load:/app/backend/tests/load
+    ports:
+      - "8089:8089"
+
+
 volumes:
   postgres_data:

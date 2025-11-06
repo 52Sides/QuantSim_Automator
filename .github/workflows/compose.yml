@@ -119,6 +119,12 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
 
+      - name: Run Locust load test (simulate endpoint)
+        run: |
+          docker compose up -d backend worker
+          sleep 10
+          docker compose run locust -f backend/tests/load/locustfile.py --headless -u 10 -r 2 -t 1m --csv=locust_report
+
       # Диагностика
       - name: Show docker logs on failure
         if: failure()

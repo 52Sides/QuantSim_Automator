@@ -43,7 +43,8 @@ dependencies = [
   "jose",
   "passlib",
   "prometheus-fastapi-instrumentator>=6.0.0",
-  "openpyxl"
+  "openpyxl",
+  "locust"
 ]
 
 [tool.setuptools]
